@@ -74,8 +74,6 @@ void play_music() {
         } else {
           int period = note_table_tri[note & 63];
           APU_TRIANGLE_LENGTH(period, 15);
-          // auto noise track generator, based off the triangle track.
-          APU_NOISE_DECAY(period, 15, 2);
           chs |= 4;
         }
       } else {
