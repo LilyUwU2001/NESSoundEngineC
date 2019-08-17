@@ -122,9 +122,15 @@ void main(void)
     vram_adr(NTADR_A(2,2));		// set address
     vram_write("HELLO, WORLD!", 13);	// write bytes to video RAM
 
+    // clear vram buffer
+    vrambuf_clear();
+  
+    // set NMI handler
+    set_vram_update(updbuf);
+
     // enable PPU rendering (turn on screen)
     ppu_on_all();
-
+    
     if (!music_ptr) start_music(music5);
     play_music();
   }
