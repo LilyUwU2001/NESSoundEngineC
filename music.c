@@ -5,6 +5,8 @@ A simple music player.
 
 #include <string.h>
 #include <nes.h>
+#include <string.h>
+#include <stdio.h>
 
 #include "neslib.h"
 
@@ -47,6 +49,8 @@ const int note_table_tri[64] = {
 
 byte music_index = 0;
 byte cur_duration = 0;
+byte playing_track = 255;
+
 
 const byte music1[]; // music data -- see end of file
 const byte music2[]; // music data -- see end of file
@@ -60,6 +64,21 @@ const byte music9[]; // music data -- see end of file
 const byte music10[]; // music data -- see end of file
 const byte music11[]; // music data -- see end of file
 const byte music12[]; // music data -- see end of file
+const byte * music_tables[] = {music1, music2, music3, music4, music5, music6, music7, music8, music9, music10, music11, music12};
+
+const char PALETTE[32] = { 
+  0x03,			// background color
+
+  0x11,0x30,0x27, 0x0,
+  0x1c,0x20,0x2c, 0x0,
+  0x00,0x10,0x20, 0x0,
+  0x06,0x16,0x26, 0x0,
+
+  0x16,0x35,0x24, 0x0,
+  0x00,0x37,0x25, 0x0,
+  0x0d,0x2d,0x3a, 0x0,
+  0x0d,0x27,0x2a
+};
 const byte* music_ptr = music1;
 
 byte next_music_byte() {
@@ -106,6 +125,7 @@ void play_music() {
 }
 
 void start_music(const byte* music) {
+  playing_track = music_index;
   music_ptr = music;
   cur_duration = 0;
 }
@@ -116,26 +136,23 @@ void main(void)
   music_ptr = 0;
   while (1) {
     // set palette colors
+    pal_all(PALETTE);
     pal_col(0,0x02);	// set screen to dark blue
     pal_col(1,0x14);	// fuchsia
     pal_col(2,0x20);	// grey
     pal_col(3,0x30);	// white
-
-    // write text to name table
-    waitvsync();
-    vram_adr(NTADR_A(2,2));		// set address
-    vram_write("HELLO, WORLD!", 13);	// write bytes to video RAM
-
-    // clear vram buffer
-    vrambuf_clear();
-  
-    // set NMI handler
-    set_vram_update(updbuf);
-
+    pal_col(4,0x02);	// set screen to dark blue
+    pal_col(5,0x14);	// fuchsia
+    pal_col(6,0x20);	// grey
+    pal_col(7,0x30);	// white
+    
     // enable PPU rendering (turn on screen)
     ppu_on_all();
     
-    if (!music_ptr) start_music(music5);
+    oam_off = oam_spr(24+0, 24, '0'+(music_index >> 4), 2, oam_off);
+    oam_off = oam_spr(24+8, 24, '0'+(music_index & 0xf), 2, oam_off);
+    
+    if (playing_track != music_index) start_music(music_tables[music_index]);
     play_music();
   }
 }
