@@ -47,6 +47,8 @@ const int note_table_tri[64] = {
 #define NOTE_TABLE note_table_49
 #define BASS_NOTE 36
 
+char pad;	// controller flags
+int frames = 0;
 byte music_index = 0;
 byte cur_duration = 0;
 byte playing_track = 255;
@@ -64,7 +66,10 @@ const byte music9[]; // music data -- see end of file
 const byte music10[]; // music data -- see end of file
 const byte music11[]; // music data -- see end of file
 const byte music12[]; // music data -- see end of file
+// stores all music data
 const byte * music_tables[] = {music1, music2, music3, music4, music5, music6, music7, music8, music9, music10, music11, music12};
+// stores jingle (one-shot) tune data - Game Over is one shot
+const bool jingle[] = {false, false, false, false, false, false, false, false, false, false, false, true};
 
 const char PALETTE[32] = { 
   0x03,			// background color
@@ -146,13 +151,28 @@ void main(void)
     pal_col(6,0x20);	// grey
     pal_col(7,0x30);	// white
     
-    // enable PPU rendering (turn on screen)
-    ppu_on_all();
-    
     oam_off = oam_spr(24+0, 24, '0'+(music_index >> 4), 2, oam_off);
     oam_off = oam_spr(24+8, 24, '0'+(music_index & 0xf), 2, oam_off);
     
+    // enable PPU rendering (turn on screen)
+    ppu_on_all();
+    
+    pad = pad_poll(0); // read the first controller
+    
+    frames++;
+    
+    if(pad & PAD_LEFT && frames >= 30){
+    	music_index -= 1;
+      	frames = 0;
+    }
+    
+    if(pad & PAD_RIGHT && frames >= 30){
+    	music_index += 1;  
+        frames = 0;
+    }
+    
     if (playing_track != music_index) start_music(music_tables[music_index]);
+    if (!music_ptr && !jingle[music_index]) playing_track = 255;
     play_music();
   }
 }
