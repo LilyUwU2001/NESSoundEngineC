@@ -70,7 +70,7 @@ const byte music13[]; // music data -- see end of file
 const byte music14[]; // music data -- see end of file
 // stores all music data
 const byte * music_tables[] = {music1, music2, music3, music4, music5, music6, music7, music8, music9, music10, music11, music12, music13};
-// stores jingle (one-shot) tune data - Game Over is one shot
+// stores jingle (one-shot) tune data - Game Over and Stage Clear is one shot
 const bool jingle[] = {false, false, false, false, false, false, false, false, false, false, false, true, true};
 
 const char PALETTE[32] = { 
