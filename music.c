@@ -8,8 +8,15 @@ A simple music player.
 
 #include "neslib.h"
 
+// VRAM buffer module
+#include "vrambuf.h"
+//#link "vrambuf.c"
+
 #include "apu.h"
 //#link "apu.c"
+
+// link the pattern table into CHR ROM
+//#link "chr_generic.s"
 
 //
 // MUSIC ROUTINES
@@ -102,9 +109,6 @@ void start_music(const byte* music) {
   music_ptr = music;
   cur_duration = 0;
 }
-
-// link the pattern table into CHR ROM
-//#link "chr_generic.s"
 
 void main(void)
 {
