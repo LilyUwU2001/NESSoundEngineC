@@ -103,13 +103,29 @@ void start_music(const byte* music) {
   cur_duration = 0;
 }
 
+// link the pattern table into CHR ROM
+//#link "chr_generic.s"
+
 void main(void)
 {
   apu_init();
   music_ptr = 0;
   while (1) {
-    if (!music_ptr) start_music(music2);
+    // set palette colors
+    pal_col(0,0x02);	// set screen to dark blue
+    pal_col(1,0x14);	// fuchsia
+    pal_col(2,0x20);	// grey
+    pal_col(3,0x30);	// white
+
+    // write text to name table
     waitvsync();
+    vram_adr(NTADR_A(2,2));		// set address
+    vram_write("HELLO, WORLD!", 13);	// write bytes to video RAM
+
+    // enable PPU rendering (turn on screen)
+    ppu_on_all();
+
+    if (!music_ptr) start_music(music5);
     play_music();
   }
 }
