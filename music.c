@@ -1,6 +1,6 @@
 
 /*
-A simple music player.
+Kitsune's Sound Engine, v3
 */
 
 #include <string.h>
@@ -69,19 +69,19 @@ byte noipos = 0;
 const byte song_symbol[] = {0x12,0};
 const byte artist_symbol[] = {0x13,0};
 const byte music1[]; // music data -- see end of file
-const byte music2[]; // music data -- see end of file
-const byte music3[]; // music data -- see end of file
-const byte music4[]; // music data -- see end of file
-const byte music5[]; // music data -- see end of file
-const byte music6[]; // music data -- see end of file
-const byte music7[]; // music data -- see end of file
-const byte music8[]; // music data -- see end of file
-const byte music9[]; // music data -- see end of file
-const byte music10[]; // music data -- see end of file
-const byte music11[]; // music data -- see end of file
-const byte music12[]; // music data -- see end of file
-const byte music13[]; // music data -- see end of file
-const byte music14[]; // music data -- see end of file
+const byte music2[];
+const byte music3[];
+const byte music4[];
+const byte music5[];
+const byte music6[];
+const byte music7[];
+const byte music8[];
+const byte music9[];
+const byte music10[];
+const byte music11[];
+const byte music12[];
+const byte music13[];
+const byte music14[];
 const byte music15[];
 const byte music16[];
 const byte music17[];
@@ -134,6 +134,7 @@ const byte artist20[] = {73,99,104,32,84,114,111,106,101,0};
 const byte * music_tables[] = {music1, music2, music3, music4, music5, music6, music7, music8, music9, music10, music11, music12, music13,music14,music15, music16,music17,music18,music19,music20};
 const byte * name_tables[] = {name1, name2, name3, name4, name5, name6, name7, name8, name9, name10, name11, name12, name13,name14,name15, name16,name17,name18, name19,name20};
 const byte * artist_tables[] = {artist1, artist2, artist3, artist4, artist5, artist6, artist7, artist8, artist9, artist10, artist11, artist12, artist13,artist14,artist15, artist16,artist17,artist18, artist19,artist20};
+// stores which channel is used to hit the noise drum
 const byte noise_channel[] = {1, 0, 1, 2, 2, 1, 0, 1, 1, 0, 1, 1, 1, 2, 1, 0, 0, 2, 0, 2};
 // stores jingle (one-shot) tune data - Game Over and Stage Clear is one shot
 const bool jingle[] = {false, false, false, false, false, false, false, false, false, false, false, true, true, false, false, false, false, false, false,false};
@@ -146,12 +147,16 @@ const byte length2_table[] =   {0x02,0x1F,0x1E,0x1E,0x0F,0x0F,0x0F,0x20,0x02,0x0
 const byte lengthtri_table[] = {0x0F,0x0F,0x0F,0x12,0x0F,0x0F,0x0F,0x18,0x0F,0x1B,0x1B,0x1B,0x0F,0x10,0x1F,0x1F,0x1F,0x1F,0x1F,0x1F,0x1F};
 const byte initvol1_table[] =  {0x0F,0x0E,0x0A,0x0A,0x0E,0x0A,0x0A,0x0F,0x0F,0x0E,0x0E,0x0E,0x0F,0x0C,0x0C,0x08,0x00,0x0C,0x0C,0x0C,0x08};
 const byte initvol2_table[] =  {0x0F,0x0E,0x0A,0x0A,0x0E,0x0A,0x0A,0x05,0x0F,0x0E,0x0E,0x0E,0x0F,0x0C,0x0C,0x08,0x00,0x0A,0x0A,0x0A,0x08};
+
+// stores the palette
 const char PALETTE[32] = { 
   0x30,0x11,0x27, 0x22,
   0x1c,0x19,0x2c, 0x29,
   0x00,0x06,0x00, 0x26,
   0x06,0x17,0x26, 0x27,
 };
+
+// default to song 1
 const byte* music_ptr = music1;
 
 byte next_music_byte() {
@@ -252,6 +257,7 @@ void put_title(int song) {
 
 
 void start_music(const byte* music) {
+  //apply the preset
   transpose = transpose_table[music_index];
   duty1 = duty1_table[music_index];
   duty2 = duty2_table[music_index];
@@ -261,12 +267,16 @@ void start_music(const byte* music) {
   initvol1 = initvol1_table[music_index];
   initvol2 = initvol2_table[music_index];
   
+  //reset the APU
   APU_PULSE_DECAY(0, 0, DUTY_12, 0, 0);
   APU_PULSE_DECAY(1, 0, DUTY_12, 0, 0);
   APU_TRIANGLE_LENGTH(0, 0);
   APU_NOISE_DECAY(0, 0, 0);
   
+  //put the song title on screen
   put_title(music_index);
+  
+  //then play the track
   playing_track = music_index;
   music_ptr = music;
   cur_duration = 0;
@@ -274,6 +284,7 @@ void start_music(const byte* music) {
 
 void main(void)
 {
+  //print out the menu
   put_str(NTADR_A(3,4), "SONG-");
   put_str(NTADR_A(3,5), "TRANSPOSE-");
   put_str(NTADR_A(3,6), "DUTY/PULSE 1-");
@@ -358,6 +369,7 @@ void main(void)
     
     pad = pad_poll(0); // read the first controller
     
+    // do all the menu stuff
     frames++;
     
     if(pad & PAD_LEFT && menu == 0 && frames >= 10){
@@ -453,7 +465,9 @@ void main(void)
      	frames = 30; 
     }
     
+    // play music
     if (playing_track != music_index) start_music(music_tables[music_index]);
+    // if no music pointer and the track is a jingle, set to silence after track
     if (!music_ptr && !jingle[music_index]) playing_track = 255;
     play_music();
   }
