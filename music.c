@@ -260,7 +260,12 @@ void start_music(const byte* music) {
   lengthtri = lengthtri_table[music_index];
   initvol1 = initvol1_table[music_index];
   initvol2 = initvol2_table[music_index];
-    
+  
+  APU_PULSE_DECAY(0, 0, DUTY_12, 0, 0);
+  APU_PULSE_DECAY(1, 0, DUTY_12, 0, 0);
+  APU_TRIANGLE_LENGTH(0, 0);
+  APU_NOISE_DECAY(0, 0, 0);
+  
   put_title(music_index);
   playing_track = music_index;
   music_ptr = music;
